@@ -11,8 +11,19 @@ import javax.ws.rs.FormParam;
 
 /**
  * Incoming SMS message from Avaya
- * 
- */
+ * AccountSid=AC400001a0ee01c9b648924b68b613b428
+ &ApiVersion=v2
+ &Body=Test
+ &DlrStatus=
+ &ErrorMessage=&
+ From=%2B14173802843
+ &Price=0
+ &SmsSid=SMf11903b683d44843812ab6a8d9c1234e
+ &SmsStatus=received
+ &To=%2B16062528425
+ **/
+
+
 
 public class AvayaMessage {
 
