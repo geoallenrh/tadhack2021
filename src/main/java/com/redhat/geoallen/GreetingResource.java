@@ -1,5 +1,7 @@
 package com.redhat.geoallen;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,8 +51,8 @@ public class GreetingResource {
     @ConfigProperty(name = "kafka.bootstrap.servers")
     String kafkaBootstrapServer;
 
-  @ConfigProperty(name = "kafka.twilio.topic")
-    String twilio_in_topic;
+  @ConfigProperty(name = "kafka.tadhack.topic")
+    String tadhack_topic;
 
     private KafkaProducer<String, String> producer;
 
@@ -81,24 +83,37 @@ public class GreetingResource {
     @Produces(MediaType.APPLICATION_XML)
     public String sms(@Form AvayaMessage message, String requestBody) {
         LOG.info(message.getBody());
-        //LOG.info(request.);
         LOG.info("SMS Messsage Body: " + requestBody);
+        sendMessageToKafka(message);
 
-        /**AccountSid=AC400001a0ee01c9b648924b68b613b428
-        &ApiVersion=v2
-        &Body=Test
-        &DlrStatus=
-        &ErrorMessage=&
-        From=%2B14173802843
-        &Price=0
-        &SmsSid=SMf11903b683d44843812ab6a8d9c1234e
-        &SmsStatus=received
-        &To=%2B16062528425
-        **/
-        //String response = "<Response><Message>Thank You!  We received your message:  </Message></Response>";
-
+        
         String avayaResponse = "<Response> <Sms>Welcome to Avaya! Let us know if we can help you in any way during your development.</Sms> </Response>";
         return avayaResponse;
+    }
+
+    public void sendMessageToKafka(AvayaMessage smsMessage) {
+      
+        try {
+           //String jsonMessage = objectMapper.writeValueAsString(smsMessage);
+           //{"time":"2021-12-12T00:20:58.289Z","sender":"Daniel Schimpfoessl","msg":"<p>save</p>","method":"spaces"}
+           //LocalDate date = LocalDate.now();
+           //String currentTime = date.format(DateTimeFormatter.ISO_INSTANT);
+           String currentTime = "2021-12-12T00:20:58.289Z";
+           Map<String, String> elements = new HashMap();
+           elements.put("time", currentTime);
+           elements.put("sender", "Geoff");
+           elements.put("msg", smsMessage.getBody());
+           elements.put("method", "sms");
+
+           String jsonKey = objectMapper.writeValueAsString("sms-message");
+           String jsonMessage = objectMapper.writeValueAsString(elements);
+           System.out.println("Message:" + jsonMessage);
+           System.out.println("Key: " + jsonKey);
+            KafkaProducerRecord<String, String> record = KafkaProducerRecord.create(tadhack_topic,jsonKey, jsonMessage);
+            producer.write(record, done -> System.out.println("Kafka message sent: twilio message - " + smsMessage.getBody()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     
